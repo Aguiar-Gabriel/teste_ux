@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de UX: Jornadas de Investimento BB vs. Sofisa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The SPA is structured as a narrative "scrollytelling" analysis. It starts with an introduction (Section 1), then visually compares the user flows side-by-side using an interactive HTML/CSS diagram (Section 2). Section 3 provides a deep-dive into the most critical screen (product choice), using interactive hotspots to detail friction points and a chart to quantify them. Section 4 concludes with a heuristic evaluation visualized as a radar chart, summarizing the UX quality. This structure was chosen to guide the user from a high-level overview to a detailed analysis and finally to a clear conclusion, making the complex comparison digestible and engaging. -->
+    <!-- Visualization & Content Choices: Report Info: BB vs Sofisa user flows. Goal: Compare journeys. Viz: Side-by-side HTML/CSS flow diagrams. Interaction: Click to reveal step details. Justification: Visually demonstrates path complexity differences. | Report Info: Product choice screen comparison. Goal: Highlight specific UI failures/successes. Viz: Interactive hotspots on UI mockups and a Bar Chart (Chart.js). Interaction: Hover/click on hotspots for info; view chart for summary. Justification: Pinpoints exact friction causes and quantifies their impact. | Report Info: Overall UX quality. Goal: Summarize findings based on heuristics. Viz: Radar Chart (Chart.js). Interaction: View comparative scores. Justification: Provides a powerful, multi-faceted final comparison. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .brand-bb { color: #004c8c; }
+        .brand-sofisa { color: #008080; }
+        .bg-brand-bb { background-color: #e6f0f7; }
+        .bg-brand-sofisa { background-color: #e6f2f2; }
+        .border-brand-bb { border-color: #004c8c; }
+        .border-brand-sofisa { border-color: #008080; }
+        .step-connector::after {
+            content: '▼';
+            display: block;
+            text-align: center;
+            color: #cbd5e1;
+            font-size: 1.5rem;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+        .step-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .step-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .hotspot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(255, 82, 82, 0.8);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 2px solid white;
+        }
+        .hotspot:hover {
+            transform: scale(1.2);
+        }
+        .hotspot .tooltip {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .hotspot:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .hotspot .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-800">Análise de UX</h1>
+            <ul class="flex space-x-4 md:space-x-8 text-sm md:text-base font-medium text-gray-600">
+                <li><a href="#journey" class="hover:text-gray-900 transition-colors">Jornadas</a></li>
+                <li><a href="#friction" class="hover:text-gray-900 transition-colors">Pontos de Fricção</a></li>
+                <li><a href="#evaluation" class="hover:text-gray-900 transition-colors">Avaliação</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="intro" class="text-center mb-20">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Análise Comparativa da Jornada de Investimento</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+                Uma análise aprofundada da experiência do usuário (UX) ao investir em Renda Fixa em dois aplicativos distintos: um banco tradicional (Banco do Brasil) e um banco digital (Sofisa Direto). O objetivo é identificar pontos de fricção e destacar as melhores práticas.
+            </p>
+        </section>
+
+        <section id="journey" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Comparando as Jornadas do Usuário</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">
+                    O caminho que o usuário percorre desde a tela inicial até a decisão de investimento revela muito sobre a usabilidade de um aplicativo. Abaixo, visualizamos os fluxos lado a lado.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                <div class="journey-column">
+                    <h4 class="text-2xl font-bold text-center mb-6 brand-bb">Banco do Brasil: A Jornada Fragmentada</h4>
+                    <div class="flex flex-col items-center">
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-bb shadow-md text-center">
+                            <p class="font-bold">1. Tela Inicial (Carteira)</p>
+                            <p class="text-sm text-gray-600">Usuário vê seu saldo, mas a ação de investir não é óbvia.</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-bb shadow-md text-center">
+                            <p class="font-bold">2. Troca para Aba "Assessoria"</p>
+                            <p class="text-sm text-gray-600">Fricção: O termo "Assessoria" é ambíguo. O usuário precisa pensar para encontrar onde investir.</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-red-100 border-2 border-red-400 rounded-lg shadow-md text-center">
+                            <p class="font-bold">3. Múltiplos Caminhos</p>
+                            <p class="text-sm text-gray-600">Várias opções ("Simular", "Escolher Investimento") causam confusão e sobrecarga cognitiva.</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-bb shadow-md text-center">
+                            <p class="font-bold">4. Tela de Decisão</p>
+                            <p class="text-sm text-gray-600">Poucas opções apresentadas com informações confusas e não padronizadas.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="journey-column">
+                    <h4 class="text-2xl font-bold text-center mb-6 brand-sofisa">Sofisa Direto: A Jornada Direcionada</h4>
+                    <div class="flex flex-col items-center">
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-sofisa shadow-md text-center">
+                            <p class="font-bold">1. Tela Inicial</p>
+                            <p class="text-sm text-gray-600">Atalho claro e proeminente "Investir" guia o usuário diretamente.</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-sofisa shadow-md text-center">
+                            <p class="font-bold">2. Prateleira de Produtos</p>
+                            <p class="text-sm text-gray-600">Categorias de investimento bem definidas (Renda Fixa, Fundos, etc).</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-green-100 border-2 border-green-400 rounded-lg shadow-md text-center">
+                            <p class="font-bold">3. Vitrine de Renda Fixa</p>
+                            <p class="text-sm text-gray-600">Lista completa de produtos com filtros e ordenação, dando controle ao usuário.</p>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-card w-full max-w-sm p-4 bg-white rounded-lg border-2 border-brand-sofisa shadow-md text-center">
+                            <p class="font-bold">4. Detalhes do Produto</p>
+                            <p class="text-sm text-gray-600">Informações claras e padronizadas para uma decisão segura.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="friction" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">O Momento da Verdade: A Tela de Decisão</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">
+                    A tela onde o usuário compara e escolhe o produto é o ponto mais crítico. É aqui que a clareza e a confiança são testadas. Passe o mouse sobre os pontos vermelhos para ver a análise.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 items-start">
+                <div class="bg-brand-bb p-6 rounded-lg">
+                    <h4 class="text-xl font-bold text-white mb-4">Banco do Brasil: Pontos de Fricção</h4>
+                    <div class="bg-white p-4 rounded-lg relative">
+                        <div class="hotspot" style="top: 20%; left: 85%;">
+                            ?
+                            <span class="tooltip">Jargão Técnico: A diferença entre "DI" e "PRE" não é explicada, confundindo investidores iniciantes.</span>
+                        </div>
+                        <div class="hotspot" style="top: 45%; left: 85%;">
+                            ?
+                            <span class="tooltip">Rentabilidade Não Padronizada: 97% do CDI vs. 11,61% a.a. impede uma comparação direta e justa.</span>
+                        </div>
+                         <div class="hotspot" style="top: 70%; left: 85%;">
+                            ?
+                            <span class="tooltip">Liquidez Contraditória: "Com Liquidez" para um produto com vencimento em 1800 dias (5 anos) gera enorme insegurança.</span>
+                        </div>
+                        <div class="border-b pb-4 mb-4">
+                            <p class="text-gray-500 text-sm">Com Liquidez</p>
+                            <div class="flex justify-between items-center">
+                                <p class="font-bold text-lg">BB CDB DI - 1800 dias</p>
+                                <p class="text-gray-400 text-sm">Aplicar ></p>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-600">Taxa de Rentabilidade (do CDI)</span> <span class="font-semibold">97,00000%</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600">Data do Vencimento</span> <span class="font-semibold">27/06/2030</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-brand-sofisa p-6 rounded-lg">
+                    <h4 class="text-xl font-bold text-white mb-4">Sofisa Direto: Pontos de Clareza</h4>
+                     <div class="bg-white p-4 rounded-lg">
+                        <div class="border-b pb-4 mb-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="font-bold text-lg">CDB Liquidez Diária</p>
+                                <div class="flex space-x-2">
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Baixo</span>
+                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">105.00% do CDI</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600">Tags informativas oferecem um resumo visual rápido sobre risco e retorno, facilitando a filtragem mental.</p>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between"><span class="text-gray-600">Aplicação mínima</span> <span class="font-semibold">R$ 1,00</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600">Prazo</span> <span class="font-semibold">3 anos</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600 font-bold">Liquidez</span> <span class="font-bold text-green-600">Diária</span></div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+            
+            <div class="mt-16">
+                <h4 class="text-2xl font-bold text-center mb-6 text-gray-800">Quantificando a Fricção</h4>
+                <div class="chart-container relative w-full max-w-2xl mx-auto h-64 md:h-80">
+                    <canvas id="frictionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluation" class="mb-12">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-gray-800">Avaliação Final de Usabilidade</h3>
+                <p class="max-w-2xl mx-auto text-gray-600 mt-2">
+                    Com base nos princípios de usabilidade de Jakob Nielsen, podemos pontuar cada experiência. O gráfico de radar abaixo ilustra o abismo na qualidade da UX entre os dois aplicativos.
+                </p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="chart-container relative w-full max-w-xl mx-auto h-80 md:h-96">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Análise de UX realizada para fins educacionais.</p>
+            <p class="text-sm text-gray-400 mt-2">Esta é uma simulação interativa e não representa um endosso ou crítica formal a nenhuma das instituições.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const frictionCtx = document.getElementById('frictionChart').getContext('2d');
+            new Chart(frictionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Confusão Gerada', 'Esforço Cognitivo', 'Risco de Erro'],
+                    datasets: [{
+                        label: 'Banco do Brasil',
+                        data: [9, 8, 7],
+                        backgroundColor: 'rgba(0, 76, 140, 0.6)',
+                        borderColor: 'rgba(0, 76, 140, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Sofisa Direto',
+                        data: [2, 3, 2],
+                        backgroundColor: 'rgba(0, 128, 128, 0.6)',
+                        borderColor: 'rgba(0, 128, 128, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Nível de Fricção (0 = Baixo, 10 = Alto)',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Clareza',
+                        'Eficiência',
+                        'Controle do Usuário',
+                        'Consistência',
+                        'Prevenção de Erros'
+                    ],
+                    datasets: [{
+                        label: 'Banco do Brasil',
+                        data: [3, 4, 5, 6, 4],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 76, 140, 0.2)',
+                        borderColor: 'rgb(0, 76, 140)',
+                        pointBackgroundColor: 'rgb(0, 76, 140)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(0, 76, 140)'
+                    }, {
+                        label: 'Sofisa Direto',
+                        data: [9, 8, 9, 8, 8],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 128, 128, 0.2)',
+                        borderColor: 'rgb(0, 128, 128)',
+                        pointBackgroundColor: 'rgb(0, 128, 128)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(0, 128, 128)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: false
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Pontuação de Usabilidade (0 a 10)',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
